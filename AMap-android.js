@@ -15,12 +15,14 @@ import {
     NativeModules,
     findNodeHandle,
     Platform,
+    DeviceEventEmitter
 } from 'react-native'
 
 const AMapManager = Platform.OS == 'ios' ? null : NativeModules.AMapModule
 
-export default class AMap extends Component {
+const NativeAMap = Platform.OS == 'ios' ? View : requireNativeComponent('RCTAMapView', AMap)
 
+export default class AMap extends Component {
     static constants = {
 
     }
@@ -42,6 +44,8 @@ export default class AMap extends Component {
             centerMarker: PropTypes.string,
         }).isRequired,
         onDidMoveByUser: PropTypes.func,
+        onLongPress: PropTypes.func,
+        onClickMarker: PropTypes.func
     }
 
     constructor(props) {
@@ -70,6 +74,9 @@ export default class AMap extends Component {
         //console.log(findNodeHandle)
         AMapManager.setCenterCoordinate(findNodeHandle(this), coordinate)
     }
+
+    showMarker(coordinate, title) {
+        AMapManager.showMarker(findNodeHandle(this), coordinate, title);
+    }
 }
 
-const NativeAMap = Platform.OS == 'ios' ? View : requireNativeComponent('RCTAMapView', AMap)

@@ -50,6 +50,7 @@ public class RCTAMapManager extends ViewGroupManager<RCTAMapView> {
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
                 .put("onDidMoveByUser", MapBuilder.of("registrationName", "onDidMoveByUser"))//registrationName 后的名字,RN中方法也要是这个名字否则不执行
+                .put("onClickMarker", MapBuilder.of("registrationName", "onClickMarker"))//registrationName 后的名字,RN中方法也要是这个名字否则不执行
                 .build();
     }
 

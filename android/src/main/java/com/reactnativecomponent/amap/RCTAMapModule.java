@@ -13,10 +13,11 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+
 import java.util.List;
 
 
-public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSearch.OnPoiSearchListener{
+public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSearch.OnPoiSearchListener {
     ReactApplicationContext mContext;
 
     private PoiSearch poiSearch;
@@ -35,15 +36,15 @@ public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSear
     }
 
     @ReactMethod
-    public void setOptions(final int reactTag, final ReadableMap options){
+    public void setOptions(final int reactTag, final ReadableMap options) {
         mContext.getCurrentActivity().runOnUiThread(new Runnable() {
             public void run() {
                 final RCTAMapView mapView = ((RCTAMapView) mContext.getCurrentActivity().findViewById(reactTag));
-                if(options.hasKey("centerCoordinate")) {
+                if (options.hasKey("centerCoordinate")) {
                     ReadableMap centerCoordinateMap = options.getMap("centerCoordinate");
                     mapView.setLatLng(new LatLng(centerCoordinateMap.getDouble("latitude"), centerCoordinateMap.getDouble("longitude")));
                 }
-                if(options.hasKey("zoomLevel")) {
+                if (options.hasKey("zoomLevel")) {
                     double zoomLevel = options.getDouble("zoomLevel");
                     mapView.setZoomLevel(zoomLevel);
                 }
@@ -52,7 +53,7 @@ public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSear
     }
 
     @ReactMethod
-    public void setCenterCoordinate(final int reactTag, final ReadableMap coordinate){
+    public void setCenterCoordinate(final int reactTag, final ReadableMap coordinate) {
         mContext.getCurrentActivity().runOnUiThread(new Runnable() {
             public void run() {
                 final RCTAMapView mapView = ((RCTAMapView) mContext.getCurrentActivity().findViewById(reactTag));
@@ -62,29 +63,39 @@ public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSear
     }
 
     @ReactMethod
-    public void searchPoiByCenterCoordinate(ReadableMap params) {
+    public void showMarker(final int reactTag, final ReadableMap coordinate, final String title) {
+        mContext.getCurrentActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final RCTAMapView mapView = ((RCTAMapView) mContext.getCurrentActivity().findViewById(reactTag));
+                mapView.addMarkersToMap(new LatLng(coordinate.getDouble("latitude"), coordinate.getDouble("longitude")),title);
+            }
+        });
+    }
 
+    @ReactMethod
+    public void searchPoiByCenterCoordinate(ReadableMap params) {
         String types = "";
-        if(params.hasKey("types")) {
+        if (params.hasKey("types")) {
             types = params.getString("types");
         }
         String keywords = "";
-        if(params.hasKey("keywords")) {
+        if (params.hasKey("keywords")) {
             keywords = params.getString("keywords");
         }
 
         PoiSearch.Query query = new PoiSearch.Query(keywords, types);
 
-        if(params.hasKey("offset")) {
+        if (params.hasKey("offset")) {
             int offset = params.getInt("offset");
             query.setPageSize(offset);// 设置每页最多返回多少条poiitem
         }
-        if(params.hasKey("page")) {
+        if (params.hasKey("page")) {
             int page = params.getInt("page");
             query.setPageNum(page);//设置查询页码
         }
         poiSearch.setQuery(query);
-        if(params.hasKey("coordinate")) {
+        if (params.hasKey("coordinate")) {
             ReadableMap coordinateMap = params.getMap("coordinate");
             double latitude = coordinateMap.getDouble("latitude");
             double longitude = coordinateMap.getDouble("longitude");
@@ -104,32 +115,31 @@ public class RCTAMapModule extends ReactContextBaseJavaModule implements PoiSear
         WritableMap dataMap = Arguments.createMap();
         if (rCode == 1000) {
             if (result != null && result.getQuery() != null) {// 搜索poi的结果
-                    // 取得搜索到的poiitems有多少页
-                    poiItems = result.getPois();// 取得第一页的poiitem数据，页数从数字0开始
+                // 取得搜索到的poiitems有多少页
+                poiItems = result.getPois();// 取得第一页的poiitem数据，页数从数字0开始
 
-                    WritableArray array = Arguments.createArray();
-                    for (PoiItem poi : poiItems) {
-                        WritableMap data = Arguments.createMap();
-                        data.putString("uid", poi.getPoiId());
-                        data.putString("name", poi.getTitle());
-                        data.putString("type", poi.getTypeDes());
-                        data.putDouble("longitude", poi.getLatLonPoint().getLongitude());
-                        data.putDouble("latitude", poi.getLatLonPoint().getLatitude());
-                        data.putString("address", poi.getSnippet());
-                        data.putString("tel", poi.getTel());
-                        data.putInt("distance", poi.getDistance());
-                        data.putString("cityCode", poi.getCityCode());
-                        data.putString("cityName", poi.getCityName());
-                        data.putString("provinceCode", poi.getProvinceCode());
-                        data.putString("provinceName", poi.getProvinceName());
-                        data.putString("adCode", poi.getAdCode());
-                        data.putString("adName", poi.getAdName());
-                        array.pushMap(data);
-                    }
-                    dataMap.putArray("searchResultList", array);
+                WritableArray array = Arguments.createArray();
+                for (PoiItem poi : poiItems) {
+                    WritableMap data = Arguments.createMap();
+                    data.putString("uid", poi.getPoiId());
+                    data.putString("name", poi.getTitle());
+                    data.putString("type", poi.getTypeDes());
+                    data.putDouble("longitude", poi.getLatLonPoint().getLongitude());
+                    data.putDouble("latitude", poi.getLatLonPoint().getLatitude());
+                    data.putString("address", poi.getSnippet());
+                    data.putString("tel", poi.getTel());
+                    data.putInt("distance", poi.getDistance());
+                    data.putString("cityCode", poi.getCityCode());
+                    data.putString("cityName", poi.getCityName());
+                    data.putString("provinceCode", poi.getProvinceCode());
+                    data.putString("provinceName", poi.getProvinceName());
+                    data.putString("adCode", poi.getAdCode());
+                    data.putString("adName", poi.getAdName());
+                    array.pushMap(data);
+                }
+                dataMap.putArray("searchResultList", array);
             }
-        }
-        else {
+        } else {
             WritableMap error = Arguments.createMap();
             error.putString("code", String.valueOf(rCode));
             dataMap.putMap("error", error);
